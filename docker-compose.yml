@@ -1,0 +1,108 @@
+volumes:
+  rinha_db_data:
+
+services:
+  ##############################
+  # Database
+  ##############################
+  rinha-db:
+    network_mode: host
+    ports:
+      - "2345:2345"
+    image: postgres:16.1
+    environment:
+      # se você não settar o PGUSER, alem do POSTGRES_USER, o psql (healthcheck) vai encher o seu saquinho
+      # psql: FATAL:  role "root" does not exist
+      # ...
+      # (ad infinitum)
+      # https://stackoverflow.com/a/60194261
+      PGUSER: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: rinha
+      POSTGRES_DB: rinha
+    volumes:
+      - rinha_db_data:/var/lib/postgresql/data
+      - ./configs/postgresql/migrations:/docker-entrypoint-initdb.d:ro
+      - ./configs/postgresql/postgresql.conf:/etc/postgresql.conf:ro
+    #command: ["postgres", "-c", "config_file=/etc/postgresql.conf", "-c", "log_statement=all"]
+    command: ["postgres", "-c", "config_file=/etc/postgresql.conf"]
+    healthcheck:
+      test: "pg_isready -p 2345"
+      interval: 3s
+    ulimits:
+      nofile:
+        soft: 1000000
+        hard: 1000000
+    deploy:
+      resources:
+        limits:
+          cpus: '0.7'
+          memory: '250MB'
+    logging:
+      driver: "none"
+
+  ##############################
+  # API, com 2 réplicas
+  ##############################
+  rinha-api1:
+    network_mode: host
+    environment:
+      RINHA_HTTP_PORT: 9990
+      RINHA_DB_USER: postgres
+      RINHA_DB_PASSWORD: rinha
+      RINHA_DB_HOST: 127.0.0.1
+      RINHA_DB_PORT: 2345
+      RINHA_DB_NAME: rinha
+      RINHA_DB_POOL_SIZE: 16
+      RINHA_API_WORKERS: 8
+    depends_on:
+      rinha-db:
+        condition: service_healthy
+    image: flipbit03/rinha-de-backend-2024-q1-cadu-api-2:latest
+    build:
+      context: .
+    ulimits:
+      nofile:
+        soft: 1000000
+        hard: 1000000
+    deploy:
+      resources:
+        limits:
+          cpus: '0.3'
+          memory: '50MB'
+    logging:
+      driver: "none"
+
+  rinha-api2:
+    extends:
+      service: rinha-api1
+    environment:
+      RINHA_HTTP_PORT: 9991
+
+  ##############################
+  # Balanceador de carga - HAProxy
+  ##############################
+  rinha-ingress:
+    network_mode: host
+    image: haproxy:2.9.5
+    ports:
+      - "9999:9999"
+    volumes:
+      - ./configs/haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro
+    depends_on:
+      rinha-api1:
+        condition: service_started
+      rinha-api2:
+        condition: service_started
+    ulimits:
+      nproc: 1000000
+      nofile:
+        soft: 1000000
+        hard: 1000000
+    deploy:
+      resources:
+        limits:
+          cpus: '0.2'
+          memory: '150MB'
+    logging:
+      driver: "none"

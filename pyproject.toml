@@ -1,0 +1,15 @@
+[tool.poetry]
+name = "rinha-de-backend-2024-q1-cadu"
+version = "0.1.0"
+description = ""
+authors = ["Cadu <cadu.coelho@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+pyyaml = "^6.0.1"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
