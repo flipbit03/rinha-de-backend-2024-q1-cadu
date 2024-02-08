@@ -1,0 +1,14 @@
+[package]
+name = "rinha-de-backend-2024-q1-cadu"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+bb8 = "0.8.3"
+bb8-postgres = { version = "0.8.1", features = ["with-chrono-0_4"] }
+env_logger = "0.11.1"
+ntex = { version = "1.1.0", features = ["tokio"] }
+tokio = { version = "1.5.0", features = ["rt", "rt-multi-thread", "macros"] }
+serde = { version = "1.0.196", features = ["derive"] }
+chrono = { version = "0.4.33", features = ["serde", "alloc"], default-features = false }
+log = "0.4.20"

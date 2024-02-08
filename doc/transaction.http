@@ -1,0 +1,17 @@
+GET 127.0.0.1:9999/clientes/1/extrato HTTP/1.1
+
+
+###
+POST 127.0.0.1:8080/clientes/1/transacoes HTTP/1.1
+Content-Type: application/json
+
+{
+    "valor": 9999,
+    "tipo": "d",
+    "descricao": "nao_fun"
+}
+
+
+
+
+
