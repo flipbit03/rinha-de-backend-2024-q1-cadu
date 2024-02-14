@@ -1,4 +1,4 @@
-use crate::db::connection::get_connection;
+use crate::db::connection::get_db_connection;
 use crate::db::pool::DbPoolType;
 use crate::db::queries::clients::get_client_by_id;
 use crate::db::queries::transaction::get_last_10_transactions;
@@ -32,7 +32,7 @@ pub async fn get_statement(
     c_id: web::types::Path<i16>,
     pool: web::types::State<DbPoolType>,
 ) -> HttpResponse {
-    let conn = get_connection(&pool).await;
+    let conn = get_db_connection(&pool).await;
 
     match get_client_by_id(&conn, *c_id).await {
         None => HttpResponse::new(StatusCode::NOT_FOUND),

@@ -1,4 +1,4 @@
-use crate::db::connection::get_connection;
+use crate::db::connection::get_db_connection;
 use crate::db::pool::DbPoolType;
 use crate::db::queries::clients::{get_client_for_update_by_id, update_client_balance_by_id};
 use crate::db::queries::transaction::insert_new_client_transaction;
@@ -33,7 +33,7 @@ pub async fn do_transaction(
         }
     };
 
-    let mut db_conn = get_connection(&pool).await;
+    let mut db_conn = get_db_connection(&pool).await;
     let db = db_conn.transaction().await.unwrap();
 
     // get client from Database
