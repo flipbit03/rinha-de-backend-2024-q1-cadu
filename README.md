@@ -12,16 +12,19 @@ flowchart LR
   OUTSIDE[outside\nworld] <--> NGINX[rinha-ingress]
   subgraph caching subsystem
     CACHE[(rinha-cache)]
-    WORKER[(rinha-worker)]
+    WORKER[[rinha-worker]]
+  end
+  subgraph durable storage 
+      DB
   end
   NGINX <--> API1[rinha-api-1]
   NGINX <--> API2[rinha-api-2]
-  API1 <--> |rw| CACHE[(rinha-cache)]
-  API2 <--> |rw| CACHE[(rinha-cache)]
-  WORKER --> |read| CACHE[(rinha-cache)] 
-  WORKER --> |write| DB[(rinha-db)]
+  API1 <--o |read/write| CACHE
+  API2 <--o |read/write| CACHE
+  WORKER --o |read| CACHE 
+  WORKER --> |write| DB
   API1 --> |read| DB[(rinha-db)]
-  API2 --> |read| DB[(rinha-db)]
+  API2 --> |read| DB
 ```
 
 ### Descrição dos componentes / Stack
