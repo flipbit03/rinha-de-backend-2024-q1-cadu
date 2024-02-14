@@ -20,4 +20,7 @@ run_local:
 	RINHA_DB_HOST=localhost \
 	RINHA_DB_PORT=28732 \
 	RINHA_DB_NAME=rinha \
+	RINHA_REDIS_HOST=localhost \
+	RINHA_REDIS_PORT=16379 \
+	RINHA_REDIS_DB=0 \
 	cargo run
