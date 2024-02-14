@@ -1,6 +1,6 @@
 pub mod structs;
 
-use crate::db::pool::PooledConnectionType;
+use crate::db::pool::DbPooledConnectionType;
 use crate::db::queries::transaction::structs::{
     ClientStatementRow, SanitizedClientTransactionRequest,
 };
@@ -34,7 +34,7 @@ const GET_LAST_10_TRANSACTIONS: &'static str =
 /// Get last N transactions for a client
 #[inline(always)]
 pub async fn get_last_10_transactions<'a>(
-    db: &PooledConnectionType<'a>,
+    db: &DbPooledConnectionType<'a>,
     client_id: i16,
 ) -> Vec<ClientStatementRow> {
     let rows = &db

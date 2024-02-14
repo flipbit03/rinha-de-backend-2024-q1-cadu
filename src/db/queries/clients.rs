@@ -1,4 +1,4 @@
-use crate::db::pool::PooledConnectionType;
+use crate::db::pool::DbPooledConnectionType;
 use bb8_postgres::tokio_postgres::{Row, Transaction};
 use std::fmt::Debug;
 
@@ -21,7 +21,10 @@ impl From<&Row> for Client {
 static GET_CLIENT_BY_ID_QUERY: &str = "SELECT i,l,b from c where i = $1";
 
 #[inline(always)]
-pub async fn get_client_by_id<'a>(db: &PooledConnectionType<'a>, client_id: i16) -> Option<Client> {
+pub async fn get_client_by_id<'a>(
+    db: &DbPooledConnectionType<'a>,
+    client_id: i16,
+) -> Option<Client> {
     let client_row = &db
         .query_opt(GET_CLIENT_BY_ID_QUERY, &[&client_id])
         .await
