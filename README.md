@@ -8,8 +8,8 @@ Ou seja, nem tudo aqui vai estar tão bonito e arquitetado o quanto poderia ou d
 ### Diagrama de Componentes
 
 ```mermaid
-graph LR
-  OUTSIDE[(🌎)] <==>|reqs| NGINX[rinha-ingress:9999]
+flowchart LR
+  OUTSIDE[(.)] <==>|reqs| NGINX[rinha-ingress:9999]
   subgraph caching subsystem
     CACHE[(rinha-cache)]
     WORKER[(rinha-worker)]
