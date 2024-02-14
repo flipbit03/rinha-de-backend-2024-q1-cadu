@@ -9,7 +9,7 @@ Ou seja, nem tudo aqui vai estar tão bonito e arquitetado o quanto poderia ou d
 
 ```mermaid
 flowchart LR
-  OUTSIDE[(.)] <==>|reqs| NGINX[rinha-ingress:9999]
+  OUTSIDE[(🌎)] <==>|reqs| NGINX[rinha-ingress:9999]
   subgraph caching subsystem
     CACHE[(rinha-cache)]
     WORKER[(rinha-worker)]
