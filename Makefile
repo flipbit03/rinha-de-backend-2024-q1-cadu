@@ -4,7 +4,7 @@ clean:
 
 .PHONY: dev
 dev:
-	docker compose up -d rinha-db
+	docker compose up -d rinha-db rinha-cache
 
 .PHONY: cycle_db
 cycle_db: clean dev

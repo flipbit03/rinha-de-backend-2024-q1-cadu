@@ -13,7 +13,7 @@ services:
       context: .
       dockerfile: pg16.1.tuned.Dockerfile
     environment:
-      # se você não settar o PGUSER, alem do POSTGRES_USER, o psql (healthcheck) vai encher o seu saquinho
+      # se você não settar o PGUSER, alem do POSTGRES_USER, o pg_isready (healthcheck) vai encher o seu saquinho
       # psql: FATAL:  role "root" does not exist
       # psql: FATAL:  role "root" does not exist
       # psql: FATAL:  role "root" does not exist
@@ -39,6 +39,21 @@ services:
         limits:
           cpus: '0.7'
           memory: '60MB'
+
+  ##############################
+  # Cache Layer
+  ##############################
+  rinha-cache:
+    ports:
+      - "127.0.0.1:16379:6379"
+    logging:
+      driver: "none"
+    image: redis:7.2.4
+    deploy:
+      resources:
+        limits:
+          cpus: '0.2'
+          memory: '200MB'
 
   ##############################
   # API, com 2 réplicas
