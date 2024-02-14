@@ -8,12 +8,20 @@ Ou seja, nem tudo aqui vai estar tão bonito e arquitetado o quanto poderia ou d
 ### Diagrama de Componentes
 
 ```mermaid
-graph TD
-  A[(.)] -->|requisições| B[rinha-ingress:9999]
-  B -->|requisições| C[rinha-api-1]
-  B -->|requisições| D[rinha-api-2]
-  C -->|consultas| E[(rinha-db)]
-  D -->|consultas| E
+flowchart LR
+  OUTSIDE[(🌎)] <==>|reqs| NGINX[rinha-ingress:9999]
+  subgraph caching subsystem
+    CACHE[(rinha-cache)]
+    WORKER[(rinha-worker)]
+  end
+  NGINX <--> API1[rinha-api-1]
+  NGINX <--> API2[rinha-api-2]
+  API1 <--> |rw| CACHE[(rinha-cache)]
+  API2 <--> |rw| CACHE[(rinha-cache)]
+  WORKER --> |read| CACHE[(rinha-cache)] 
+  WORKER --> |write| DB[(rinha-db)]
+  API1 --> |read| DB[(rinha-db)]
+  API2 --> |read| DB[(rinha-db)]
 ```
 
 ### Descrição dos componentes / Stack
@@ -33,6 +41,8 @@ graph TD
     - `env_logger` pra printar uns treco enquanto tava desenvolvendo.
   - Build multistage copiando o binário para um container `scratch`
     - literalmente, o container só tem o executável. 
+- TODO: RINHA CACHE
+- TODO: RINHA WORKER
 - `rinha-db`
   - `postgres:16`
     - `fsync` **ligado**, nada de unlogged tables, ...
