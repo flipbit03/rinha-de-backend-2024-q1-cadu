@@ -1,8 +1,9 @@
 use crate::db::pool::DbPooledConnectionType;
 use bb8_postgres::tokio_postgres::{Row, Transaction};
+use serde::{Deserialize, Serialize};
 use std::fmt::Debug;
 
-#[derive(Debug)]
+#[derive(Debug, Deserialize, Serialize)]
 pub struct Client {
     pub id: i16,
     pub limit: i64,

@@ -5,6 +5,10 @@ use crate::db::queries::transaction::insert_new_client_transaction;
 use crate::db::queries::transaction::structs::{
     ClientTransactionRequest, SanitizedClientTransactionRequest,
 };
+use crate::redis::connection::get_redis_connection;
+use crate::redis::pool::RedisPoolType;
+use crate::redis::queries::get_cached_client;
+use bb8_redis::redis::AsyncCommands;
 use log::error;
 use ntex::http::StatusCode;
 use ntex::web;
@@ -20,7 +24,8 @@ struct TransactionResponse {
 #[post("/clientes/{client_id}/transacoes")]
 pub async fn do_transaction(
     client_id: web::types::Path<i16>,
-    pool: web::types::State<DbPoolType>,
+    db_pool: web::types::State<DbPoolType>,
+    redis_pool: web::types::State<RedisPoolType>,
     transaction_request: web::types::Json<ClientTransactionRequest>,
 ) -> HttpResponse {
     // Valide a entrada ou já morra com 422
@@ -33,7 +38,11 @@ pub async fn do_transaction(
         }
     };
 
-    let mut db_conn = get_db_connection(&pool).await;
+    let mut redis_conn = get_redis_connection(&redis_pool).await;
+
+    let cached_client = get_cached_client(&mut redis_conn, *client_id).await;
+
+    let mut db_conn = get_db_connection(&db_pool).await;
     let db = db_conn.transaction().await.unwrap();
 
     // get client from Database
