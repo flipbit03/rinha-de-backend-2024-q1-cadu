@@ -1,48 +1,43 @@
 use crate::db::connection::get_db_connection;
 use crate::db::pool::DbPoolType;
-use crate::db::queries::clients::get_client_by_id;
-use crate::db::queries::transaction::get_last_10_transactions;
-use crate::db::queries::transaction::structs::ClientStatementRow;
-use chrono::{DateTime, Utc};
+use crate::db::queries::statement::get_client_statement;
+use crate::redis::connection::get_redis_connection;
+use crate::redis::pool::RedisPoolType;
+use bb8_redis::redis::AsyncCommands;
 use ntex::http::StatusCode;
 use ntex::web;
 use ntex::web::{get, HttpResponse};
-use serde::Serialize;
-use std::time::SystemTime;
-
-/// Client Statement Header
-/// Containing the client's current balance and credit limit,
-/// together with the statement date
-#[derive(Serialize)]
-struct ClientStatementHeader {
-    pub total: i64,
-    pub data_extrato: DateTime<Utc>,
-    pub limite: i64,
-}
-
-/// Client Statement
-#[derive(Serialize)]
-struct ClientStatement {
-    pub saldo: ClientStatementHeader,
-    pub ultimas_transacoes: Vec<ClientStatementRow>,
-}
 
 #[get("/clientes/{c_id}/extrato")]
 pub async fn get_statement(
     c_id: web::types::Path<i16>,
-    pool: web::types::State<DbPoolType>,
+    db_pool: web::types::State<DbPoolType>,
+    redis_pool: web::types::State<RedisPoolType>,
 ) -> HttpResponse {
-    let conn = get_db_connection(&pool).await;
+    let mut redis_conn = get_redis_connection(&redis_pool).await;
 
-    match get_client_by_id(&conn, *c_id).await {
+    let cached_statement: Option<String> = redis_conn
+        .get(format!("client:{}:statement", c_id))
+        .await
+        .unwrap();
+
+    // If the statement is cached, return it
+    if let Some(s) = cached_statement {
+        println!("Statement found in cache");
+        return HttpResponse::Ok().content_type("application/json").body(s);
+    };
+
+    let db_conn = get_db_connection(&db_pool).await;
+
+    match get_client_statement(&db_conn, *c_id).await {
         None => HttpResponse::new(StatusCode::NOT_FOUND),
-        Some(client) => HttpResponse::Ok().json(&ClientStatement {
-            saldo: ClientStatementHeader {
-                total: client.balance,
-                data_extrato: SystemTime::now().into(),
-                limite: client.limit,
-            },
-            ultimas_transacoes: get_last_10_transactions(&conn, *c_id).await,
-        }),
+        Some(statement) => {
+            let serialized = serde_json::to_string(&statement).unwrap();
+            let _: String = redis_conn
+                .set(format!("client:{}:statement", c_id), serialized)
+                .await
+                .unwrap();
+            HttpResponse::Ok().json(&statement)
+        }
     }
 }

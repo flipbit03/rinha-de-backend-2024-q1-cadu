@@ -72,7 +72,7 @@ pub async fn do_transaction(
                 Err(e) => {
                     eprintln!("Failed to commit transaction: {:?}", e);
                     // Failed to commit transaction (return 500)
-                    return HttpResponse::new(StatusCode::UNPROCESSABLE_ENTITY);
+                    HttpResponse::new(StatusCode::UNPROCESSABLE_ENTITY)
                 }
             }
         }

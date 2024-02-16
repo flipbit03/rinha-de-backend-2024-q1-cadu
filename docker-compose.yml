@@ -74,6 +74,7 @@ services:
     image: flipbit03/rinha-de-backend-2024-q1-cadu-api:latest
     build:
       context: .
+      target: rinha-api
     deploy:
       replicas: 2
       resources:

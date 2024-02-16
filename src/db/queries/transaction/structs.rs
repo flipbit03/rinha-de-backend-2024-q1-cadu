@@ -17,8 +17,8 @@ pub struct SanitizedClientTransactionRequest {
     pub descricao: String,
 }
 
-const DEBIT: &'static str = "d";
-const CREDIT: &'static str = "c";
+const DEBIT: &str = "d";
+const CREDIT: &str = "c";
 
 impl TryFrom<&ClientTransactionRequest> for SanitizedClientTransactionRequest {
     type Error = ();
@@ -59,7 +59,7 @@ impl TryFrom<&ClientTransactionRequest> for SanitizedClientTransactionRequest {
     }
 }
 
-#[derive(Serialize)]
+#[derive(Deserialize, Serialize)]
 pub struct ClientStatementRow {
     pub valor: i64,
     pub tipo: String,

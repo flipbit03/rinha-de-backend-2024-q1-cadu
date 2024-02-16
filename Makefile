@@ -15,12 +15,16 @@ up: clean
 	docker compose up --build
 
 run_local:
-	RINHA_DB_USER=postgres \
-	RINHA_DB_PASSWORD=rinha \
-	RINHA_DB_HOST=localhost \
-	RINHA_DB_PORT=28732 \
-	RINHA_DB_NAME=rinha \
-	RINHA_REDIS_HOST=localhost \
-	RINHA_REDIS_PORT=16379 \
-	RINHA_REDIS_DB=0 \
+	RINHA__HTTP__PORT=9999 \
+	RINHA__WORKERS=32 \
+	RINHA__DB__USER=postgres \
+	RINHA__DB__PASSWORD=rinha \
+	RINHA__DB__HOST=localhost \
+	RINHA__DB__PORT=28732 \
+	RINHA__DB__POOL_SIZE=32 \
+	RINHA__DB__NAME=rinha \
+	RINHA__REDIS__HOST=localhost \
+	RINHA__REDIS__PORT=16379 \
+	RINHA__REDIS__DB=0 \
+	RINHA__REDIS__POOL_SIZE=32 \
 	cargo run
