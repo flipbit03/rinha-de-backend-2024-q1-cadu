@@ -4,15 +4,14 @@ use crate::db::pool::PooledConnectionType;
 use crate::db::queries::transaction::structs::{
     ClientStatementRow, SanitizedClientTransactionRequest,
 };
-use bb8_postgres::tokio_postgres::{Error, Transaction};
+use bb8_postgres::tokio_postgres::Error;
 
-const INSERT_NEW_TRANSACTION_QUERY: &'static str =
-    "INSERT INTO t (c, o, a, d) VALUES ($1, $2, $3, $4)";
+const INSERT_NEW_TRANSACTION_QUERY: &str = "INSERT INTO t (c, o, a, d) VALUES ($1, $2, $3, $4)";
 
 /// Insert incoming transaction
 #[inline(always)]
 pub async fn insert_new_client_transaction<'a>(
-    db: &Transaction<'a>,
+    db: &PooledConnectionType<'a>,
     client_id: i16,
     transaction: &SanitizedClientTransactionRequest,
 ) -> Result<u64, Error> {
@@ -28,7 +27,7 @@ pub async fn insert_new_client_transaction<'a>(
     .await
 }
 
-const GET_LAST_10_TRANSACTIONS: &'static str =
+const GET_LAST_10_TRANSACTIONS: &str =
     "SELECT a, o, d, t FROM t WHERE c = $1 ORDER BY t DESC LIMIT 10";
 
 /// Get last N transactions for a client
@@ -42,7 +41,5 @@ pub async fn get_last_10_transactions<'a>(
         .await
         .unwrap();
 
-    rows.iter()
-        .map(|row| ClientStatementRow::from(row))
-        .collect()
+    rows.iter().map(ClientStatementRow::from).collect()
 }

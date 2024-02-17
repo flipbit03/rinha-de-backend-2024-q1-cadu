@@ -5,7 +5,6 @@ use crate::db::queries::transaction::insert_new_client_transaction;
 use crate::db::queries::transaction::structs::{
     ClientTransactionRequest, SanitizedClientTransactionRequest,
 };
-use log::error;
 use ntex::http::StatusCode;
 use ntex::web;
 use ntex::web::{post, HttpResponse};
@@ -33,11 +32,10 @@ pub async fn do_transaction(
         }
     };
 
-    let mut db_conn = get_connection(&pool).await;
-    let db = db_conn.transaction().await.unwrap();
+    let db_conn = get_connection(&pool).await;
 
     // get client from Database
-    let client = get_client_for_update_by_id(&db, *client_id).await;
+    let client = get_client_for_update_by_id(&db_conn, *client_id).await;
 
     match client {
         // Client not found (return 404)
@@ -54,27 +52,19 @@ pub async fn do_transaction(
             }
 
             // Update client balance
-            update_client_balance_by_id(&db, *client_id, new_balance).await;
+            update_client_balance_by_id(&db_conn, *client_id, new_balance).await;
 
             // Insert new transaction into the database
-            if let Err(e) = insert_new_client_transaction(&db, *client_id, &sanitized_request).await
+            if insert_new_client_transaction(&db_conn, *client_id, &sanitized_request).await.is_err()
             {
-                error!("Failed to insert transaction: {:?}", e);
-                // Failed to insert transaction (return 422)
                 return HttpResponse::new(StatusCode::UNPROCESSABLE_ENTITY);
             }
 
-            match db.commit().await {
-                Ok(_) => HttpResponse::Ok().json(&TransactionResponse {
-                    limite: client.limit,
-                    saldo: new_balance,
-                }),
-                Err(e) => {
-                    eprintln!("Failed to commit transaction: {:?}", e);
-                    // Failed to commit transaction (return 500)
-                    return HttpResponse::new(StatusCode::UNPROCESSABLE_ENTITY);
-                }
-            }
+            // Return the new balance and credit limit
+            HttpResponse::Ok().json(&TransactionResponse {
+                limite: client.limit,
+                saldo: new_balance,
+            })
         }
     }
 }

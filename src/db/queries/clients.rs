@@ -1,5 +1,5 @@
 use crate::db::pool::PooledConnectionType;
-use bb8_postgres::tokio_postgres::{Row, Transaction};
+use bb8_postgres::tokio_postgres::Row;
 use std::fmt::Debug;
 
 #[derive(Debug)]
@@ -27,18 +27,14 @@ pub async fn get_client_by_id<'a>(db: &PooledConnectionType<'a>, client_id: i16)
         .await
         .unwrap();
 
-    match client_row {
-        Some(row) => Some(Client::from(row)),
-        None => None,
-    }
+    client_row.as_ref().map(Client::from)
 }
 
 static GET_CLIENT_FOR_UPDATE_BY_ID_QUERY: &str = "SELECT i,l,b from c where i = $1 FOR UPDATE";
 
-/// Gets a
 #[inline(always)]
 pub async fn get_client_for_update_by_id<'a>(
-    db: &Transaction<'a>,
+    db: &PooledConnectionType<'a>,
     client_id: i16,
 ) -> Option<Client> {
     let client_row = &db
@@ -46,21 +42,18 @@ pub async fn get_client_for_update_by_id<'a>(
         .await
         .unwrap();
 
-    match client_row {
-        Some(row) => Some(Client::from(row)),
-        None => None,
-    }
+    client_row.as_ref().map(Client::from)
 }
 
 //
 // Update Client balance by ID
 //
 
-const UPDATE_CLIENT_BALANCE_BY_ID_QUERY: &'static str = "UPDATE c SET b = $1 WHERE i = $2";
+const UPDATE_CLIENT_BALANCE_BY_ID_QUERY: &str = "UPDATE c SET b = $1 WHERE i = $2";
 
 #[inline(always)]
 pub async fn update_client_balance_by_id<'a>(
-    db: &Transaction<'a>,
+    db: &PooledConnectionType<'a>,
     client_id: i16,
     new_balance: i64,
 ) {
