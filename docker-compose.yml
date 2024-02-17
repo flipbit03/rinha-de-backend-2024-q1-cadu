@@ -71,7 +71,7 @@ services:
     depends_on:
       rinha-db:
         condition: service_healthy
-    image: flipbit03/rinha-de-backend-2024-q1-cadu-api:latest
+    image: flipbit03/rinha-de-backend-2024-q1-cadu-api2:latest
     build:
       context: .
       target: rinha-api
