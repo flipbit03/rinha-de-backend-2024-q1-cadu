@@ -29,6 +29,8 @@ pub async fn do_transaction(
     transaction_request: web::types::Json<ClientTransactionRequest>,
 ) -> HttpResponse {
     // Valide a entrada ou já morra com 422
+    // Precisei fazer assim (dentro da rota) pois a falha do extrator web::types::Json<T> para
+    // 'transaction_request' acima retorna 400, e o spec da rinha pediu 422.
     let sanitized_request = match SanitizedClientTransactionRequest::try_from(&*transaction_request)
     {
         Ok(sanitized) => sanitized,
