@@ -5,7 +5,7 @@ A pasta será gerada dentro da pasta entregas/ e conterá:
 
 - O arquivo docker-compose.yml, com as imagens dos serviços
 - O arquivo README.md, com as informações do projeto
-- A pasta migrations/, com as migrações do banco de dados
+- A pasta postgresql/, com as migrações do banco de dados
 - A pasta nginx/, com as configurações do proxy reverso
 """
 import shutil
@@ -18,8 +18,7 @@ ROOT = Path(__file__).parent
 ENTREGAS_FOLDER = (ROOT / "entregas")
 DOCKER_COMPOSE_FILE = (ROOT / "docker-compose.yml")
 README_MD_FILE = (ROOT / "README.md")
-MIGRATIONS_FOLDER = (ROOT / "migrations")
-NGINX_FOLDER = (ROOT / "nginx")
+CONFIGS_FOLDER = (ROOT / "configs")
 
 if __name__ == "__main__":
     # Ensure entregas/ folder exists
@@ -45,11 +44,7 @@ if __name__ == "__main__":
     # Copy the README.md.readme to the release folder as README.md
     shutil.copy(README_MD_FILE, RELEASE_FOLDER / "README.md")
 
-    # Copy the migrations folder
-    shutil.copytree(MIGRATIONS_FOLDER, RELEASE_FOLDER / "migrations")
-
-    # Copy the nginx folder
-    shutil.copytree(NGINX_FOLDER, RELEASE_FOLDER / "nginx")
-
+    # Copy the configs folder
+    shutil.copytree(CONFIGS_FOLDER, RELEASE_FOLDER / "configs")
 
 print(ROOT)

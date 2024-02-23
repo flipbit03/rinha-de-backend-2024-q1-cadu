@@ -8,22 +8,22 @@ use ntex::web::{middleware, App, HttpServer};
 
 #[ntex::main]
 async fn main() -> std::io::Result<()> {
-    //std::env::set_var("RUST_LOG", "info");
-    //env_logger::init();
+    // std::env::set_var("RUST_LOG", "info");
+    // env_logger::init();
 
     let server_port = std::env::var("RINHA_HTTP_PORT").unwrap_or("9999".to_string());
 
     let pool_size = std::env::var("RINHA_DB_POOL_SIZE")
-        .unwrap_or("32".to_string())
+        .expect("Missing RINHA_DB_POOL_SIZE")
         .parse::<u32>()
-        .expect("Invalid RINHA_DB_POOL_SIZE");
+        .unwrap();
 
     let pool = db::pool::create_db_pool(pool_size).await;
 
     let api_workers = std::env::var("RINHA_API_WORKERS")
-        .unwrap_or("32".to_string())
+        .expect("Invalid RINHA_API_WORKERS")
         .parse::<usize>()
-        .expect("Invalid RINHA_API_WORKERS");
+        .unwrap();
 
     // Warm up the pool
     println!("Warming up the DB connection pool...");
@@ -49,6 +49,11 @@ async fn main() -> std::io::Result<()> {
     })
     .bind(format!("0.0.0.0:{}", server_port))?
     .workers(api_workers)
+    // .client_timeout(Seconds::new(32))
+    // .keep_alive(KeepAlive::Timeout(Seconds::new(32)))
+    // .maxconn(1024)
+    // .maxconnrate(16)
+    // .disconnect_timeout(Seconds::new(32))
     .run()
     .await
 }
