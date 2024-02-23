@@ -20,17 +20,15 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: rinha
       POSTGRES_DB: rinha
-    logging:
-      driver: "none"
+    volumes:
+      - rinha_db_data:/var/lib/postgresql/data
+      - ./configs/postgresql/migrations:/docker-entrypoint-initdb.d:ro
+      - ./configs/postgresql/postgresql.conf:/etc/postgresql.conf:ro
     #command: ["postgres", "-c", "config_file=/etc/postgresql.conf", "-c", "log_statement=all"]
     command: ["postgres", "-c", "config_file=/etc/postgresql.conf"]
     healthcheck:
       test: "pg_isready -p 2345"
       interval: 3s
-    volumes:
-      - rinha_db_data:/var/lib/postgresql/data
-      - ./configs/postgresql/migrations:/docker-entrypoint-initdb.d:ro
-      - ./configs/postgresql/postgresql.conf:/etc/postgresql.conf:ro
     ulimits:
       nofile:
         soft: 1000000
@@ -40,14 +38,14 @@ services:
         limits:
           cpus: '0.7'
           memory: '300MB'
+    logging:
+      driver: "none"
 
   ##############################
   # API, com 2 réplicas
   ##############################
   rinha-api1:
     network_mode: host
-    logging:
-      driver: "none"
     environment:
       RINHA_HTTP_PORT: 9990
       RINHA_DB_USER: postgres
@@ -72,6 +70,8 @@ services:
         limits:
           cpus: '0.3'
           memory: '200MB'
+    logging:
+      driver: "none"
 
   rinha-api2:
     extends:
@@ -80,39 +80,10 @@ services:
       RINHA_HTTP_PORT: 9991
 
   ##############################
-  # Balanceador de carga - Nginx
-  ##############################
-#  rinha-ingress:
-#    logging:
-#      driver: "none"
-#    image: nginx:latest
-#    ports:
-#      - "9999:9999"
-#    volumes:
-#    - ./configs/nginx.conf:/etc/nginx/nginx.conf:ro
-#    depends_on:
-#      rinha-api1:
-#        condition: service_started
-#      rinha-api2:
-#        condition: service_started
-#    ulimits:
-#      nproc: 1000000
-#      nofile:
-#        soft: 1000000
-#        hard: 1000000
-#    deploy:
-#      resources:
-#        limits:
-#          cpus: '0.3'
-#          memory: '150MB'
-
-  ##############################
   # Balanceador de carga - HAProxy
   ##############################
   rinha-ingress:
     network_mode: host
-    logging:
-      driver: "none"
     image: haproxy:2.9.5
     ports:
       - "9999:9999"
@@ -121,8 +92,8 @@ services:
     depends_on:
       rinha-api1:
         condition: service_started
-#      rinha-api2:
-#        condition: service_started
+      rinha-api2:
+        condition: service_started
     ulimits:
       nproc: 1000000
       nofile:
@@ -133,3 +104,5 @@ services:
         limits:
           cpus: '0.2'
           memory: '70MB'
+    logging:
+      driver: "none"
