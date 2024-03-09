@@ -49,11 +49,6 @@ async fn main() -> std::io::Result<()> {
     })
     .bind(format!("0.0.0.0:{}", server_port))?
     .workers(api_workers)
-    // .client_timeout(Seconds::new(32))
-    // .keep_alive(KeepAlive::Timeout(Seconds::new(32)))
-    // .maxconn(1024)
-    // .maxconnrate(16)
-    // .disconnect_timeout(Seconds::new(32))
     .run()
     .await
 }
