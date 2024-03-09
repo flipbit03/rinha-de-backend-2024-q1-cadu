@@ -18,14 +18,14 @@ up: clean
 upd: clean
 	docker compose up --build -d
 
-export RINHA_DB_POOL_SIZE=32
-export RINHA_API_WORKERS=8
-export RINHA_DB_USER=postgres
-export RINHA_DB_PASSWORD=rinha
-export RINHA_DB_HOST=localhost
-export RINHA_DB_PORT=28732
-export RINHA_DB_NAME=rinha
-
+export RINHA__DB__POOL_SIZE=32
+export RINHA__DB__USER=postgres
+export RINHA__DB__PASSWORD=rinha
+export RINHA__DB__HOST=localhost
+export RINHA__DB__PORT=2345
+export RINHA__DB__NAME=rinha
+export RINHA__API__HTTP_PORT=9990
+export RINHA__API__WORKERS=8
 
 .PHONY: run_local
 run_local:

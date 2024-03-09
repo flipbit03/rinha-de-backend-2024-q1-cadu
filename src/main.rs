@@ -1,33 +1,37 @@
+mod config;
 mod db;
 mod routes;
 
-use crate::db::connection::get_connection;
 use crate::routes::statement::get_statement;
 use crate::routes::transaction::do_transaction;
+use crate::{config::RinhaConfig, db::connection::get_connection};
+use log::error;
 use ntex::web::{middleware, App, HttpServer};
 
 #[ntex::main]
 async fn main() -> std::io::Result<()> {
-    // std::env::set_var("RUST_LOG", "info");
-    // env_logger::init();
 
-    let server_port = std::env::var("RINHA_HTTP_PORT").unwrap_or("9999".to_string());
+    // Logging is only enabled in debug mode
+    #[cfg(debug_assertions)]
+    {
+        println!("Enabling debug logging...");
+        std::env::set_var("RUST_LOG", "info");
+        env_logger::init();
+    }
 
-    let pool_size = std::env::var("RINHA_DB_POOL_SIZE")
-        .expect("Missing RINHA_DB_POOL_SIZE")
-        .parse::<u32>()
-        .unwrap();
+    let config = match RinhaConfig::new() {
+        Ok(config) => config,
+        Err(e) => {
+            error!("Failed to load configuration: {}", e);
+            std::process::exit(1);
+        }
+    };
 
-    let pool = db::pool::create_db_pool(pool_size).await;
-
-    let api_workers = std::env::var("RINHA_API_WORKERS")
-        .expect("Invalid RINHA_API_WORKERS")
-        .parse::<usize>()
-        .unwrap();
+    let pool = db::pool::create_db_pool(&config).await;
 
     // Warm up the pool
     println!("Warming up the DB connection pool...");
-    for _ in 0..pool_size {
+    for _ in 0..config.db.pool_size {
         let _ = get_connection(&pool)
             .await
             .execute("SELECT 1", &[])
@@ -37,7 +41,7 @@ async fn main() -> std::io::Result<()> {
 
     println!(
         "Starting server on port={} / db_pool_size={} / api_workers={}",
-        server_port, pool_size, api_workers
+        config.api.http_port, config.db.pool_size, config.api.workers
     );
     HttpServer::new(move || {
         let pool = pool.clone();
@@ -47,8 +51,8 @@ async fn main() -> std::io::Result<()> {
             .service(do_transaction)
             .service(get_statement)
     })
-    .bind(format!("0.0.0.0:{}", server_port))?
-    .workers(api_workers)
+    .bind(format!("0.0.0.0:{}", config.api.http_port))?
+    .workers(config.api.workers)
     .run()
     .await
 }
