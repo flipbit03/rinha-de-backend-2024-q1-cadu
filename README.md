@@ -1,9 +1,14 @@
 ## Rinha de Backend 2024 Q1 - Submissão do [@Cadu](https://twitter.com/_____cadu_____)
 
-Foquei em desempenho nesse projeto, com o lema "menos é mais".
-Isso significa que houveram tradeoffs e alguns corners cortados, buscando boa performance e latência. 
+Projeto desenvolvido para a [Rinha de Backend 2024-Q1](https://github.com/zanfranceschi/rinha-de-backend-2024-q1). 
 
-Ou seja, nem tudo aqui vai estar tão bonito e arquitetado o quanto poderia ou deveria estar num projeto real.
+Foquei em desempenho nesse projeto, com o lema "menos é mais".
+
+Isso significa que houveram tradeoffs e alguns corners cortados, buscando boa performance e latência. _(ou seja, nem tudo aqui vai estar tão bonito e arquitetado o quanto poderia ou deveria estar num projeto real)_
+
+### Como rodar o projeto
+
+    docker compose up
 
 ### Diagrama de Componentes
 
@@ -27,7 +32,7 @@ graph TD
   - Banco de dados:
     - `bb8` (pool de conexões)
     - `bb8-postgres` (adaptador do bb8 pro postgres)
-    - `tokio_postgres` (driver do postgres
+    - `tokio_postgres` (driver do postgres)
   - Extras:
     - `chrono` pra trampar com datas sem ficar maluco.
     - `env_logger` pra printar uns treco enquanto tava desenvolvendo.
@@ -42,10 +47,6 @@ graph TD
 - Algumas considerações:
   - nada de `alpine` foi usado, de propósito, pois existem algumas considerações de performance importantes com a `musl-libc` que atrapalhariam o foco aqui, comparado com a `glibc`.
 
-### Repositório
-
-* [flipbit03/rinha-de-backend-2024-q1-cadu](https://github.com/flipbit03/rinha-de-backend-2024-q1-cadu)
-  
 ### Aleatoriedades 
 
 Coisas que me ajudaram pelo caminho.
